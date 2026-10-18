@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CampusFix — Student Issue Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">🛠️</div>
+        <div class="brand-text">
+          <div class="brand-title-wrap">
+            <h1 class="brand-title">Campus<span>Fix</span></h1>
+            <span class="brand-badge">Student Hub</span>
+          </div>
+          <p class="brand-tagline">Make campus better, one report at a time.</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- Live unresolved indicator -->
+        <div class="unresolved-pill" id="headerUnresolvedPill" title="Open issues needing attention">
+          <span class="pulsing-dot" aria-hidden="true"></span>
+          <span id="headerUnresolvedText">0 Unresolved</span>
+        </div>
+        <button type="button" class="btn btn-primary" id="btnScrollToForm">
+          <span aria-hidden="true">➕</span> Report an Issue
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <div class="container">
+
+    <!-- METRICS DASHBOARD CARDS -->
+    <section class="stats-grid" aria-label="Summary Statistics">
+      <div class="stat-card stat-total">
+        <div class="stat-icon-wrap" aria-hidden="true">📋</div>
+        <div class="stat-info">
+          <span class="stat-label">Total Issues</span>
+          <span class="stat-number" id="statTotalCount">0</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-open highlighted">
+        <div class="stat-icon-wrap" aria-hidden="true">⚠️</div>
+        <div class="stat-info">
+          <div class="stat-label-wrap">
+            <span class="stat-label">Open Issues</span>
+            <span class="stat-subbadge">Needs Action</span>
+          </div>
+          <span class="stat-number text-amber" id="statOpenCount">0</span>
+        </div>
+      </div>
+
+      <div class="stat-card stat-resolved">
+        <div class="stat-icon-wrap" aria-hidden="true">✅</div>
+        <div class="stat-info">
+          <span class="stat-label">Resolved Issues</span>
+          <span class="stat-number text-emerald" id="statResolvedCount">0</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKSPACE (FORM + ISSUES FEED) -->
+    <div class="layout-grid">
+
+      <!-- LEFT: REPORT FORM -->
+      <aside class="form-panel" id="reportFormSection">
+        <div class="panel-header">
+          <div class="panel-title-wrap">
+            <span class="panel-icon" aria-hidden="true">📝</span>
+            <h2 class="panel-title">Report an Issue</h2>
+          </div>
+          <p class="panel-subtitle">Spotted something broken or messy? Let facilities know.</p>
+        </div>
+
+        <form id="issueForm" novalidate>
+          <!-- Issue Title -->
+          <div class="form-group">
+            <label for="issueTitle" class="form-label">
+              Issue Title <span class="required-star">*</span>
+            </label>
+            <input
+              type="text"
+              id="issueTitle"
+              name="issueTitle"
+              class="form-control"
+              placeholder="e.g., Water fountain leaking on 2nd floor"
+              maxlength="90"
+              autocomplete="off"
+            />
+            <span class="error-msg" id="titleError">Please enter a clear title (at least 4 characters).</span>
+          </div>
+
+          <!-- Category -->
+          <div class="form-group">
+            <label for="issueCategory" class="form-label">
+              Category <span class="required-star">*</span>
+            </label>
+            <select id="issueCategory" name="issueCategory" class="form-control select-control">
+              <option value="" disabled selected>Select problem area...</option>
+              <option value="Classrooms">🏫 Classrooms</option>
+              <option value="Toilets">🚻 Toilets</option>
+              <option value="Canteen">🥪 Canteen</option>
+              <option value="Other">📦 Other</option>
+            </select>
+            <span class="error-msg" id="categoryError">Please select a category.</span>
+          </div>
+
+          <!-- Priority -->
+          <div class="form-group">
+            <label for="issuePriority" class="form-label">
+              Priority <span class="required-star">*</span>
+            </label>
+            <select id="issuePriority" name="issuePriority" class="form-control select-control">
+              <option value="Low">🟢 Low — Minor inconvenience</option>
+              <option value="Medium" selected>🟡 Medium — Needs prompt attention</option>
+              <option value="High">🔴 High — Urgent safety/hazard</option>
+            </select>
+          </div>
+
+          <!-- Specific Location (Contextual) -->
+          <div class="form-group">
+            <label for="issueLocation" class="form-label">
+              Location / Room <span class="optional-tag">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              id="issueLocation"
+              name="issueLocation"
+              class="form-control"
+              placeholder="e.g., Block B, Room 304"
+              maxlength="60"
+            />
+          </div>
+
+          <button type="submit" class="btn btn-submit" id="btnSubmit">
+            <span aria-hidden="true">🚀</span> Submit Issue
+          </button>
+        </form>
+      </aside>
+
+      <!-- RIGHT: ISSUES LIST & CONTROLS -->
+      <section class="feed-panel" aria-label="Campus Issues List">
+        <!-- Filter Bar -->
+        <div class="controls-card">
+          <div class="filter-tabs" role="tablist" aria-label="Filter issues by status">
+            <button
+              type="button"
+              class="tab-btn active"
+              data-filter="all"
+              id="tabAll"
+              role="tab"
+              aria-selected="true"
+            >
+              All (<span id="tabCountAll">0</span>)
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              data-filter="open"
+              id="tabOpen"
+              role="tab"
+              aria-selected="false"
+            >
+              Open (<span id="tabCountOpen">0</span>)
+            </button>
+            <button
+              type="button"
+              class="tab-btn"
+              data-filter="resolved"
+              id="tabResolved"
+              role="tab"
+              aria-selected="false"
+            >
+              Resolved (<span id="tabCountResolved">0</span>)
+            </button>
+          </div>
+
+          <div class="search-box">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Search issues or location..."
+              aria-label="Search issues by keyword"
+            />
+          </div>
+        </div>
+
+        <!-- Issue Cards Container -->
+        <div class="cards-list" id="issuesList" aria-live="polite">
+          <!-- Populated by script.js -->
+        </div>
+
+        <!-- Empty State View -->
+        <div class="empty-state hidden" id="emptyState">
+          <div class="empty-icon" aria-hidden="true">🎉</div>
+          <h3 class="empty-title">No issues found</h3>
+          <p class="empty-desc" id="emptyStateDesc">
+            There are currently no reports matching this filter.
+          </p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- TOAST FEEDBACK -->
+  <div class="toast" id="toastNotification" role="alert" aria-live="assertive">
+    <span class="toast-icon" id="toastIcon">✅</span>
+    <span class="toast-message" id="toastMessage">Success</span>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>CampusFix • Real-time student facilities reporting system • Stored locally in your browser</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
